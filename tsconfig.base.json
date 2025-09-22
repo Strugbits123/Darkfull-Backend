@@ -16,6 +16,10 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@dark-full-3pl-platform/source"]
+    "customConditions": ["@dark-full-3pl-platform/source"],
+    "baseUrl": ".",
+    "paths": {
+      "@packages/*": ["packages/*"],
+    }
   }
 }

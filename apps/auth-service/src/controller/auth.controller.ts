@@ -1,7 +1,7 @@
 import { Response, Request } from 'express';
 // import bcrypt from 'bcryptjs';
 // import { logger } from '../utils/logger';
-import { asyncHandler } from '../../../packages/utils/helpers/asyncHandler';
+import { asyncHandler } from '@packages/utils/helpers/asyncHandler';
 
 
 export const inviteUser = asyncHandler( async (req: Request, res: Response) => {
