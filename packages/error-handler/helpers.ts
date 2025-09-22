@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import {Response } from 'express';
 import {
   AppError,
   ValidationError,
@@ -6,7 +6,7 @@ import {
   UnauthorizedError,
   ConflictError,
   DatabaseError,
-} from './index';
+} from './index.js';
 
 /**
  * Utility functions for consistent error handling across controllers

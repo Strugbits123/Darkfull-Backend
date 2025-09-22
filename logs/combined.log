@@ -1,0 +1,16 @@
+{"level":"info","message":"🚀 API Gateway listening at http://localhost:8080","service":"api-gateway","timestamp":"2025-09-22 13:25:29"}
+{"level":"info","message":"🌍 Environment: development","service":"api-gateway","timestamp":"2025-09-22 13:25:29"}
+{"level":"info","message":"🔧 Process ID: 13352","service":"api-gateway","timestamp":"2025-09-22 13:25:29"}
+{"level":"info","message":"🔍 Health check: http://localhost:8080/health","service":"api-gateway","timestamp":"2025-09-22 13:25:29"}
+{"level":"info","message":"📊 Auth service: http://localhost:6001","service":"api-gateway","timestamp":"2025-09-22 13:25:29"}
+{"level":"info","message":"🚀 API Gateway listening at http://localhost:8080","service":"api-gateway","timestamp":"2025-09-22 13:46:25"}
+{"level":"info","message":"🌍 Environment: development","service":"api-gateway","timestamp":"2025-09-22 13:46:25"}
+{"level":"info","message":"🔧 Process ID: 6676","service":"api-gateway","timestamp":"2025-09-22 13:46:25"}
+{"level":"info","message":"🔍 Health check: http://localhost:8080/health","service":"api-gateway","timestamp":"2025-09-22 13:46:25"}
+{"level":"info","message":"📊 Auth service: http://localhost:6001","service":"api-gateway","timestamp":"2025-09-22 13:46:25"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"api-gateway","timestamp":"2025-09-22 13:47:06"}
+{"level":"info","message":"🚀 API Gateway listening at http://localhost:8080","service":"api-gateway","timestamp":"2025-09-22 13:47:12"}
+{"level":"info","message":"🌍 Environment: development","service":"api-gateway","timestamp":"2025-09-22 13:47:12"}
+{"level":"info","message":"🔧 Process ID: 18732","service":"api-gateway","timestamp":"2025-09-22 13:47:12"}
+{"level":"info","message":"🔍 Health check: http://localhost:8080/health","service":"api-gateway","timestamp":"2025-09-22 13:47:12"}
+{"level":"info","message":"📊 Auth service: http://localhost:6001","service":"api-gateway","timestamp":"2025-09-22 13:47:12"}

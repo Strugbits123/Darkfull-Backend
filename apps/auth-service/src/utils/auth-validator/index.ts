@@ -1,5 +1,5 @@
 import z from 'zod';
-import { UserRole } from '../enums';
+import { UserRole } from '@prisma/client';
 import { OtpType } from '@prisma/client';
 
 // Verify user registration

@@ -5,7 +5,7 @@ import { DatabaseError, NotFoundError } from '../../error-handler';
 export interface SessionData {
   id: string;
   userId: string;
-  token: string;
+  accessToken: string;
   refreshToken: string | null;
   expiresAt: Date;
   createdAt: Date;
@@ -36,14 +36,13 @@ export const createSession = async (
       data: {
         id: sessionId,
         userId,
-        token: tokens.accessToken,
+        accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: tokens.refreshTokenExpiresAt, // Use refresh token expiry as session expiry
         createdAt: new Date(),
         userAgent,
         ipAddress,
-        platform,
-        deviceInfo,
+        deviceType: platform, // Map platform to deviceType
         location,
       },
     });
@@ -52,14 +51,14 @@ export const createSession = async (
     const sessionData: SessionData = {
       id: session.id,
       userId: session.userId,
-      token: session.token,
+      accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.platform ?? undefined,
-      deviceInfo: session.deviceInfo ?? undefined,
+      platform: session.deviceType ?? undefined, // Map deviceType back to platform
+      deviceInfo: undefined, // Field doesn't exist in schema
       location: session.location ?? undefined,
     };
 
@@ -86,14 +85,14 @@ export const getSessionById = async (
     const sessionData: SessionData = {
       id: session.id,
       userId: session.userId,
-      token: session.token,
+      accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.platform ?? undefined,
-      deviceInfo: session.deviceInfo ?? undefined,
+      platform: session.deviceType ?? undefined,
+      deviceInfo: undefined, // Field doesn't exist in schema
       location: session.location ?? undefined,
     };
     return sessionData;
@@ -127,14 +126,14 @@ export const getActiveSessionByUserId = async (
     const sessionData: SessionData = {
       id: session.id,
       userId: session.userId,
-      token: session.token,
+      accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.platform ?? undefined,
-      deviceInfo: session.deviceInfo ?? undefined,
+      platform: session.deviceType ?? undefined,
+      deviceInfo: undefined,
       location: session.location ?? undefined,
     };
     return sessionData;
@@ -157,7 +156,7 @@ export const updateSessionTokens = async (
     const session = await prisma.session.update({
       where: { id: sessionId },
       data: {
-        token: tokens.accessToken,
+        accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: tokens.refreshTokenExpiresAt,
       },
@@ -165,14 +164,14 @@ export const updateSessionTokens = async (
     const sessionData: SessionData = {
       id: session.id,
       userId: session.userId,
-      token: session.token,
+      accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.platform ?? undefined,
-      deviceInfo: session.deviceInfo ?? undefined,
+      platform: session.deviceType ?? undefined,
+      deviceInfo: undefined,
       location: session.location ?? undefined,
     };
     return sessionData;
@@ -283,14 +282,14 @@ export const getUserSessions = async (
     const sessionDataArray: SessionData[] = sessions.map(session => ({
       id: session.id,
       userId: session.userId,
-      token: session.token,
+      accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.platform ?? undefined,
-      deviceInfo: session.deviceInfo ?? undefined,
+      platform: session.deviceType ?? undefined,
+      deviceInfo: undefined,
       location: session.location ?? undefined,
     }));
 
@@ -323,14 +322,14 @@ export const getSessionByRefreshToken = async (
     return {
       id: session.id,
       userId: session.userId,
-      token: session.token,
+      accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.platform ?? undefined,
-      deviceInfo: session.deviceInfo ?? undefined,
+      platform: session.deviceType ?? undefined,
+      deviceInfo: undefined,
       location: session.location ?? undefined,
     };
   } catch (error) {
