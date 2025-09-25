@@ -68,6 +68,9 @@ export const authenticateToken = async (
             email: true,
             fullName: true,
             status: true,
+            role: true,
+            storeId: true,
+            warehouseId: true,
           },
         }),
       'fetching user for authentication'

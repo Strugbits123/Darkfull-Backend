@@ -8,16 +8,28 @@ import {
   sallaCallback,
 } from '../../controller/auth.controller';
 import { authenticateToken } from '../../utils/middlewares/auth.middleware';
+import { 
+  requireSuperAdmin,
+  validateStoreContext,
+} from '../../utils/middlewares/invitation.middleware';
 
 const authRouter: Router = express.Router();
 
-
-authRouter.post('/invitations/store-admin', inviteStoreAdmin);
-authRouter.post('/invitations/validate/:token', validateInvitation);
+// Public routes
+authRouter.get('/invitations/validate/:token', validateInvitation);
 authRouter.post('/invitations/accept', acceptInvitation);
 authRouter.post('/login', userLogin);
-authRouter.get('/salla/connect', sallaConnect, authenticateToken);
-authRouter.get('/salla/callback', sallaCallback, authenticateToken);
 
+// Protected routes - Super Admin only
+authRouter.post('/invitations/store-admin', 
+  authenticateToken,
+  requireSuperAdmin,
+  validateStoreContext,
+  inviteStoreAdmin
+);
+
+// Protected routes - Store Admin only (Salla integration)
+authRouter.get('/salla/connect', authenticateToken, sallaConnect);
+authRouter.get('/salla/callback', authenticateToken, sallaCallback);
 
 export default authRouter;

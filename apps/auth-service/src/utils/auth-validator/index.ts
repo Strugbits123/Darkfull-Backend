@@ -45,6 +45,28 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional().default(false),
 });
 
+// Store Admin Invitation Schema
+export const inviteStoreAdminSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  fullName: z.string().min(1, 'Full name is required').optional(),
+  storeId: z.string().min(1, 'Store ID is required'),
+  storeName: z.string().min(1, 'Store name is required'),
+});
+
+// Invitation Validation Schema
+export const validateInvitationSchema = z.object({
+  token: z.string().min(1, 'Invitation token is required'),
+});
+
+// Accept Invitation Schema
+export const acceptInvitationSchema = z.object({
+  token: z.string().min(1, 'Invitation token is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number').optional(),
+});
+
 // User Verification Schema
 export const verifyUserSchema = z.object({
   email: z.string().email('Invalid email format'),
