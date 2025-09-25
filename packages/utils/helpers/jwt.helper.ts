@@ -96,8 +96,8 @@ export const generateTokenPair = (
 export const verifyAccessToken = (token: string): TokenPayload => {
   try {
     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET, {
-      issuer: 'animal-adoption-portal',
-      audience: 'animal-adoption-portal-users',
+      issuer: 'dark-full-3pl-platform',
+      audience: 'dark-full-3pl-platform-users',
     }) as TokenPayload;
 
     if (decoded.type !== 'access') {

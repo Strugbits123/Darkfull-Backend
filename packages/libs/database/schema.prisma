@@ -11,19 +11,78 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Store Management Models
+model Store {
+  id                      String   @id @default(cuid())
+  name                    String
+  slug                    String   @unique
+  createdBy              String   @map("created_by")
+  
+  // Salla Integration
+  sallaStoreId           String?  @map("salla_store_id")
+  sallaAccessToken       String?  @map("salla_access_token")
+  sallaRefreshToken      String?  @map("salla_refresh_token")
+  sallaAccessTokenExpireAt String? @map("salla_access_token_expire_at")
+  sallaClientId          String?  @map("salla_client_id")
+  sallaClientSecret      String?  @map("salla_client_secret")
+  sallaConnectedAt       DateTime? @map("salla_connected_at")
+  
+  isActive               Boolean  @default(true) @map("is_active")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  users                  User[]
+  warehouses            Warehouse[]
+  invitations           Invitation[]
+  creator               User     @relation("StoreCreator", fields: [createdBy], references: [id])
+  
+  @@map("stores")
+}
+
+// Warehouse Management Models
+model Warehouse {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  storeId     String   @map("store_id")
+  address     String?
+  city        String?
+  country     String?
+  postalCode  String?  @map("postal_code")
+  phone       String?
+  managerId   String?  @map("manager_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  store       Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  manager     User? @relation("WarehouseManager", fields: [managerId], references: [id])
+  users       User[]
+  invitations Invitation[]
+  
+  @@map("warehouses")
+}
+
 // User Management Models
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   phone     String?  @unique
-  password  String
+  password  String?
+  fullName  String?  @map("full_name")
   firstName String?  @map("first_name")
   lastName  String?  @map("last_name")
   avatar    String?
   
   // Status and Role
-  status    UserStatus @default(PENDING)
-  role      UserRole   @default(USER)
+  status      UserStatus @default(PENDING)
+  role        UserRole   @default(USER)
+  storeId     String?    @map("store_id")
+  warehouseId String?    @map("warehouse_id")
+  invitedBy   String?    @map("invited_by")
   
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -48,13 +107,48 @@ model User {
   userPermissions   UserPermissionMapping[]
   auditLogs         AuditLog[]
   
-  // Merchant specific fields (for 3PL platform)
-  merchantId        String?   @map("merchant_id")
-  sallaStoreId      String?   @map("salla_store_id")
-  sallaAccessToken  String?   @map("salla_access_token")
-  sallaRefreshToken String?   @map("salla_refresh_token")
+  // Store and warehouse relations
+  store             Store?      @relation(fields: [storeId], references: [id])
+  warehouse         Warehouse?  @relation(fields: [warehouseId], references: [id])
+  inviter           User?       @relation("UserInvitations", fields: [invitedBy], references: [id])
+  invitedUsers      User[]      @relation("UserInvitations")
+  
+  // Store creator relation
+  createdStores     Store[]     @relation("StoreCreator")
+  managedWarehouses Warehouse[] @relation("WarehouseManager")
+  
+  // Invitation relations
+  sentInvitations     Invitation[] @relation("InvitationSender")
+  receivedInvitations Invitation[] @relation("InvitationReceiver")
   
   @@map("users")
+}
+
+// Invitation Management Models
+model Invitation {
+  id          String            @id @default(cuid())
+  email       String
+  token       String            @unique
+  role        UserRole
+  storeId     String            @map("store_id")
+  warehouseId String?           @map("warehouse_id")
+  invitedBy   String            @map("invited_by")
+  permissions Json?             @default("{}")
+  status      InvitationStatus  @default(PENDING)
+  expiresAt   DateTime          @map("expires_at")
+  acceptedAt  DateTime?         @map("accepted_at")
+  userId      String?           @map("user_id")
+  
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  
+  // Relations
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  inviter     User      @relation("InvitationSender", fields: [invitedBy], references: [id])
+  user        User?     @relation("InvitationReceiver", fields: [userId], references: [id])
+  
+  @@map("invitations")
 }
 
 model Role {
@@ -284,13 +378,21 @@ enum UserStatus {
 
 enum UserRole {
   SUPER_ADMIN
-  ADMIN
+  STORE_ADMIN
+  DIRECTOR
   MANAGER
-  MERCHANT
-  WAREHOUSE_MANAGER
-  WAREHOUSE_STAFF
-  CUSTOMER_SERVICE
+  RECEIVER
+  PICKER
+  PACKER
+  SHIPPER
   USER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
 }
 
 enum OtpType {
