@@ -104,7 +104,6 @@ model User {
   otps              Otp[]
   sessions          Session[]
   userRoles         UserRoleMapping[]
-  userPermissions   UserPermissionMapping[]
   auditLogs         AuditLog[]
   
   // Store and warehouse relations
@@ -183,7 +182,6 @@ model Permission {
   
   // Relations
   rolePermissions RolePermissionMapping[]
-  userPermissions UserPermissionMapping[]
   
   @@unique([resource, action])
   @@map("permissions")
@@ -221,22 +219,7 @@ model RolePermissionMapping {
   @@map("role_permission_mappings")
 }
 
-model UserPermissionMapping {
-  id           String @id @default(cuid())
-  userId       String @map("user_id")
-  permissionId String @map("permission_id")
-  
-  assignedAt DateTime @default(now()) @map("assigned_at")
-  assignedBy String?  @map("assigned_by") // User ID who assigned this permission
-  expiresAt  DateTime? @map("expires_at") // Optional permission expiration
-  
-  // Relations
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, permissionId])
-  @@map("user_permission_mappings")
-}
+
 
 // OTP Management
 model Otp {

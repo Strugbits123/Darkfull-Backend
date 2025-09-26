@@ -133,13 +133,6 @@ export const assignRoleSchema = z.object({
   expiresAt: z.date().optional(),
 });
 
-// Permission Assignment Schema
-export const assignPermissionSchema = z.object({
-  userId: z.string().cuid(),
-  permissionId: z.string().cuid(),
-  expiresAt: z.date().optional(),
-});
-
 // Create Role Schema
 export const createRoleSchema = z.object({
   name: z.string().min(1, 'Role name is required'),
@@ -188,7 +181,6 @@ export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type UpdateUserStatusInput = z.infer<typeof updateUserStatusSchema>;
 export type AssignRoleInput = z.infer<typeof assignRoleSchema>;
-export type AssignPermissionInput = z.infer<typeof assignPermissionSchema>;
 export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 export type CreatePermissionInput = z.infer<typeof createPermissionSchema>;
 export type ValidateSessionInput = z.infer<typeof validateSessionSchema>;
