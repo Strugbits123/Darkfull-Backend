@@ -179,6 +179,15 @@ app.use('/api/v1/auth', proxy(AUTH_SERVICE_URL, {
   }
 }));
 
+// Store Management Service (handled by Auth Service)
+app.use('/api/v1/stores', proxy(AUTH_SERVICE_URL, {
+  proxyReqPathResolver: (req: Request) => `/api/v1/stores${req.url}`,
+  proxyErrorHandler: (err: Error, res: Response) => {
+    logger.error('Store service proxy error:', err);
+    res.status(503).json({ error: 'Store service unavailable' });
+  }
+}));
+
 // Order Service (when implemented)
 app.use('/api/v1/orders', proxy(ORDER_SERVICE_URL, {
   proxyReqPathResolver: (req: Request) => `/api/v1/orders${req.url}`,
@@ -251,6 +260,7 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
 
 const server = app.listen(PORT, async () => {
   logger.info(`🚀 API Gateway listening at ${BASE_URL}`);
+  logger.info(`Swagger docs available at ${BASE_URL}/docs`);
   logger.info(`🌍 Environment: ${NODE_ENV}`);
   logger.info(`🔧 Process ID: ${process.pid}`);
   

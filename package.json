@@ -7,6 +7,7 @@
     "db:generate": "prisma generate --schema=./packages/libs/database/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=./packages/libs/database/schema.prisma",
     "db:push": "prisma db push --schema=./packages/libs/database/schema.prisma",
+    "db:deploy": "prisma migrate deploy --schema=./packages/libs/database/schema.prisma",
     "db:studio": "prisma studio --schema=./packages/libs/database/schema.prisma",
     "db:seed": "tsx packages/libs/database/seed.ts",
     "start:gateway": "nx serve api-gateway",
