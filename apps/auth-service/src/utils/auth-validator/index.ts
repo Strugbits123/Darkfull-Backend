@@ -169,6 +169,15 @@ export const searchSchema = z.object({
   fields: z.array(z.string()).optional(),
 }).merge(paginationSchema);
 
+
+
+// Salla Connect Schema
+export const sallaConnectSchema = z.object({
+  sallaClientId: z.string().min(1, 'Salla Client ID is required'),
+  sallaClientSecret: z.string().min(1, 'Salla Client Secret is required'),
+});
+
+
 // Export types
 export type UserRegisterInput = z.infer<typeof UserRegisterSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -186,3 +195,4 @@ export type CreatePermissionInput = z.infer<typeof createPermissionSchema>;
 export type ValidateSessionInput = z.infer<typeof validateSessionSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
 export type SearchInput = z.infer<typeof searchSchema>;
+export type SallaConnectInput = z.infer<typeof sallaConnectSchema>;

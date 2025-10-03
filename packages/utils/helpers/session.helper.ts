@@ -11,8 +11,7 @@ export interface SessionData {
   createdAt: Date;
   userAgent?: string;
   ipAddress?: string;
-  platform?: string;
-  deviceInfo?: string;
+  deviceType?: string;
   location?: string;
 }
 
@@ -29,9 +28,11 @@ export const createSession = async (
   location?: string
 ): Promise<{ session: SessionData; tokens: TokenPair }> => {
   try {
+    console.log('Creating session for user=====:', { userId, email });
     const sessionId = generateSessionId();
+    console.log('Generated session ID:', sessionId);
     const tokens = generateTokenPair(userId, email, sessionId);
-
+    console.log('Generated tokens:', tokens);
     const session = await prisma.session.create({
       data: {
         id: sessionId,
@@ -39,7 +40,6 @@ export const createSession = async (
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: tokens.refreshTokenExpiresAt, // Use refresh token expiry as session expiry
-        createdAt: new Date(),
         userAgent,
         ipAddress,
         deviceType: platform, // Map platform to deviceType
@@ -57,8 +57,7 @@ export const createSession = async (
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.deviceType ?? undefined, // Map deviceType back to platform
-      deviceInfo: undefined, // Field doesn't exist in schema
+      deviceType: session.deviceType ?? undefined,
       location: session.location ?? undefined,
     };
 
@@ -91,8 +90,7 @@ export const getSessionById = async (
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.deviceType ?? undefined,
-      deviceInfo: undefined, // Field doesn't exist in schema
+      deviceType: session.deviceType ?? undefined,
       location: session.location ?? undefined,
     };
     return sessionData;
@@ -132,8 +130,7 @@ export const getActiveSessionByUserId = async (
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.deviceType ?? undefined,
-      deviceInfo: undefined,
+      deviceType: session.deviceType ?? undefined,
       location: session.location ?? undefined,
     };
     return sessionData;
@@ -170,8 +167,7 @@ export const updateSessionTokens = async (
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.deviceType ?? undefined,
-      deviceInfo: undefined,
+      deviceType: session.deviceType ?? undefined,
       location: session.location ?? undefined,
     };
     return sessionData;
@@ -328,8 +324,7 @@ export const getSessionByRefreshToken = async (
       createdAt: session.createdAt,
       userAgent: session.userAgent ?? undefined,
       ipAddress: session.ipAddress ?? undefined,
-      platform: session.deviceType ?? undefined,
-      deviceInfo: undefined,
+      deviceType: session.deviceType ?? undefined,
       location: session.location ?? undefined,
     };
   } catch (error) {

@@ -10,6 +10,7 @@ import {
 import { authenticateToken } from '../../utils/middlewares/auth.middleware';
 import { 
   requireSuperAdmin,
+  requireStoreAdmin,
   validateStoreContext,
 } from '../../utils/middlewares/invitation.middleware';
 
@@ -20,6 +21,9 @@ authRouter.get('/invitations/validate/:token', validateInvitation);
 authRouter.post('/invitations/accept', acceptInvitation);
 authRouter.post('/login', userLogin);
 
+// Salla OAuth callback (public - no auth required)
+authRouter.get('/salla/callback', sallaCallback);
+
 // Protected routes - Super Admin only
 authRouter.post('/invitations/store-admin', 
   authenticateToken,
@@ -29,7 +33,10 @@ authRouter.post('/invitations/store-admin',
 );
 
 // Protected routes - Store Admin only (Salla integration)
-authRouter.get('/salla/connect', authenticateToken, sallaConnect);
-authRouter.get('/salla/callback', authenticateToken, sallaCallback);
+authRouter.post('/salla/connect', 
+  authenticateToken, 
+  requireStoreAdmin, 
+  sallaConnect
+);
 
 export default authRouter;

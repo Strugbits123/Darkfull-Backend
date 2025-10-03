@@ -34,7 +34,8 @@ import {
   loginSchema, 
   inviteStoreAdminSchema, 
   validateInvitationSchema, 
-  acceptInvitationSchema 
+  acceptInvitationSchema,
+  sallaConnectSchema
 } from '../utils/auth-validator';
 import { sendEmail, generateInvitationEmailTemplate } from '@packages/libs/sendgrid';
 import crypto from 'crypto';
@@ -446,8 +447,15 @@ export const userLogin = asyncHandler(async (req: Request, res: Response) => {
   const platform = (req.headers['x-platform'] as string) || 'web';
   const deviceInfo = (req.headers['user-agent'] as string) || '';
   const location = (req.headers['x-location'] as string) || '';
-
+   console.log('Login request metadata:', {
+     userAgent,
+     ipAddress,
+     platform,
+     deviceInfo,
+     location
+   });
   // Create session
+  console.log('Creating session for user:', { userId: user.id, email: user.email });
   const { session, tokens } = await createSession(
     user.id,
     user.email,
@@ -493,53 +501,189 @@ export const userLogin = asyncHandler(async (req: Request, res: Response) => {
   sendSuccessResponse(res, responseData, 'Login successful', 200);
 });
 
-// Salla OAuth Integration
+// Salla OAuth Integration - Store Admin only
 export const sallaConnect = asyncHandler(
   async (req: Request, res: Response) => {
-    const sallaClientId = '36e42043-f4a5-419a-9587-77f6634e4000';
-    const sallaRedirectUri =
-      'https://a779a4474087.ngrok-free.app/api/v1/auth/salla/callback';
-    const state = 'some_random_state_string';
-    const sallaAuthUrl = `https://accounts.salla.sa/oauth2/auth?client_id=${sallaClientId}&redirect_uri=${sallaRedirectUri}&response_type=code&scope=offline_access&state=${state}`;
-    res.redirect(sallaAuthUrl);
+    // Validate request data
+    const validated = sallaConnectSchema.safeParse(req.body);
+    if (!validated.success) {
+      throw new ValidationError('Invalid Salla connection data', validated.error.message);
+    }
+
+    const { sallaClientId, sallaClientSecret } = validated.data;
+    const user = req.user as { id: string; role: string; storeId: string };
+
+    // Verify user is Store Admin and has a store
+    if (!user.storeId) {
+      throw new ValidationError('Store Admin must be associated with a store');
+    }
+
+    // Generate secure random state string (minimum 32 characters with alphabets)
+    const state = crypto.randomBytes(16).toString('hex') + Date.now().toString(36);
+    
+    // Get redirect URI from environment
+    const sallaRedirectUri = process.env.SALLA_REDIRECT_URI;
+    if (!sallaRedirectUri) {
+      throw new ValidationError('Salla redirect URI not configured');
+    }
+
+    // Update store with Salla credentials and state
+    const updatedStore = await handleDatabaseOperation(
+      () => prisma.store.update({
+        where: { id: user.storeId },
+        data: {
+          sallaClientId,
+          sallaClientSecret,
+          sallaState: state, // Store state for validation
+        },
+        select: {
+          id: true,
+          name: true,
+          sallaClientId: true,
+        }
+      }),
+      'updating store with Salla credentials'
+    );
+
+    // Construct Salla authorization URL
+    const sallaAuthUrl = `https://accounts.salla.sa/oauth2/auth?client_id=${sallaClientId}&redirect_uri=${encodeURIComponent(sallaRedirectUri)}&response_type=code&scope=offline_access&state=${state}`;
+
+    const responseData = {
+      store: {
+        id: updatedStore.id,
+        name: updatedStore.name,
+        sallaClientId: updatedStore.sallaClientId,
+      },
+      authorizationUrl: sallaAuthUrl,
+      state,
+    };
+
+    sendSuccessResponse(res, responseData, 'Salla connection initiated successfully. Please complete authorization via the provided URL.', 200);
   }
 );
 
 // Salla OAuth Callback
 export const sallaCallback = asyncHandler(
   async (req: Request, res: Response) => {
-    const { code } = req.query;
-    console.log('Salla callback invoked', req.query);
-    console.log('Authorization code:', code);
-    const sallaClientId = '36e42043-f4a5-419a-9587-77f6634e4000';
-    const sallaClientSecret = '6860d0b71a83fe7a4b1932983c992661';
-    const sallaRedirectUri =
-      'https://a779a4474087.ngrok-free.app/api/v1/auth/salla/callback';
-    // const sallaRedirectUri = 'http://localhost:8080/api/v1/auth/salla/callback';
-    const SALLA_TOKEN_URL = 'https://accounts.salla.sa/oauth2/token';
-
-    if (!code) {
-      return res.status(400).json({ error: 'Missing code' });
+    const { code, state } = req.query;
+    
+    if (!code || !state) {
+      throw new ValidationError('Missing authorization code or state parameter');
     }
 
+    // Find store by state to validate the callback
+    const store = await handleDatabaseOperation(
+      () => prisma.store.findFirst({
+        where: {
+          sallaState: state as string,
+        },
+        select: {
+          id: true,
+          name: true,
+          sallaClientId: true,
+          sallaClientSecret: true,
+          sallaState: true,
+        }
+      }),
+      'finding store by state'
+    );
+
+    if (!store) {
+      throw new ValidationError('Invalid state parameter or expired authorization request');
+    }
+
+    if (!store.sallaClientId || !store.sallaClientSecret) {
+      throw new ValidationError('Store Salla credentials not configured');
+    }
+
+    const sallaRedirectUri = process.env.SALLA_REDIRECT_URI;
+    const SALLA_TOKEN_URL = 'https://accounts.salla.sa/oauth2/token';
+
     try {
+      // Exchange authorization code for access token
+      const tokenParams = new URLSearchParams();
+      tokenParams.append('grant_type', 'authorization_code');
+      tokenParams.append('code', code as string);
+      tokenParams.append('client_id', store.sallaClientId);
+      tokenParams.append('client_secret', store.sallaClientSecret);
+      tokenParams.append('redirect_uri', sallaRedirectUri || '');
+
       const response = await axios.post(
         SALLA_TOKEN_URL,
-        new URLSearchParams({
-          grant_type: 'authorization_code',
-          code: code as string,
-          client_id: sallaClientId,
-          client_secret: sallaClientSecret,
-          redirect_uri: sallaRedirectUri,
-        }),
-        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        tokenParams,
+        { 
+          headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          }
+        }
       );
-      console.log('Token response:', response.data);
+
       const { access_token, refresh_token, expires_in } = response.data;
-      return res.status(200).json({ access_token, refresh_token, expires_in });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Internal server error' });
+
+      if (!access_token) {
+        throw new Error('No access token received from Salla');
+      }
+
+      // Calculate token expiry time
+      const expiryTime = new Date(Date.now() + (expires_in * 1000));
+
+      // Update store with tokens
+      const updatedStore = await handleDatabaseOperation(
+        () => prisma.store.update({
+          where: { id: store.id },
+          data: {
+            sallaAccessToken: access_token,
+            sallaRefreshToken: refresh_token,
+            sallaAccessTokenExpireAt: expiryTime,
+            sallaConnectedAt: new Date(), // Track when the integration was completed
+            sallaState: null, // Clear state after successful authentication
+          },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            sallaAccessToken: false, // Don't return sensitive data
+            sallaRefreshToken: false,
+            sallaAccessTokenExpireAt: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        }),
+        'updating store with Salla tokens'
+      );
+
+      const responseData = {
+        store: updatedStore,
+        sallaIntegration: {
+          connected: true,
+          connectedAt: new Date(),
+          tokenExpiresAt: expiryTime,
+        },
+      };
+
+      sendSuccessResponse(res, responseData, 'Salla integration completed successfully', 200);
+
+    } catch (error: any) {
+      logger.error('Salla OAuth callback error:', error);
+      
+      // Clear the state to prevent replay attacks
+      await handleDatabaseOperation(
+        () => prisma.store.update({
+          where: { id: store.id },
+          data: { sallaState: null }
+        }),
+        'clearing Salla state after error'
+      );
+
+      if (error.response?.data) {
+        logger.error('Salla API error response:', error.response.data);
+        throw new ValidationError(
+          `Salla OAuth error: ${error.response.data.message || 'Authentication failed'}`
+        );
+      }
+
+      throw new ValidationError('Failed to complete Salla authentication. Please try again.');
     }
   }
 );

@@ -22,10 +22,11 @@ model Store {
   sallaStoreId           String?  @map("salla_store_id")
   sallaAccessToken       String?  @map("salla_access_token")
   sallaRefreshToken      String?  @map("salla_refresh_token")
-  sallaAccessTokenExpireAt String? @map("salla_access_token_expire_at")
+  sallaAccessTokenExpireAt DateTime? @map("salla_access_token_expire_at")
   sallaClientId          String?  @map("salla_client_id")
   sallaClientSecret      String?  @map("salla_client_secret")
   sallaConnectedAt       DateTime? @map("salla_connected_at")
+  sallaState             String?  @map("salla_state") // For OAuth state validation
   
   isActive               Boolean  @default(true) @map("is_active")
   createdAt              DateTime @default(now()) @map("created_at")

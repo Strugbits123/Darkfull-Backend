@@ -39,30 +39,30 @@ const SERVICES: Record<string, ServiceConfig> = {
     docsPath: '/api-docs/v1/swagger.json',
     version: '1.0.0',
   },
-  'order-service': {
-    name: 'Order Management Service', 
-    url: process.env.ORDER_SERVICE_URL || 'http://localhost:6002',
-    docsPath: '/api-docs/v1/swagger.json',
-    version: '1.0.0',
-  },
-  'inventory-service': {
-    name: 'Inventory Management Service',
-    url: process.env.INVENTORY_SERVICE_URL || 'http://localhost:6003', 
-    docsPath: '/api-docs/v1/swagger.json',
-    version: '1.0.0',
-  },
-  'warehouse-service': {
-    name: 'Warehouse Management Service',
-    url: process.env.WAREHOUSE_SERVICE_URL || 'http://localhost:6004',
-    docsPath: '/api-docs/v1/swagger.json', 
-    version: '1.0.0',
-  },
-  'notification-service': {
-    name: 'Notification Service',
-    url: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:6005',
-    docsPath: '/api-docs/v1/swagger.json',
-    version: '1.0.0',
-  },
+  // 'order-service': {
+  //   name: 'Order Management Service', 
+  //   url: process.env.ORDER_SERVICE_URL || 'http://localhost:6002',
+  //   docsPath: '/api-docs/v1/swagger.json',
+  //   version: '1.0.0',
+  // },
+  // 'inventory-service': {
+  //   name: 'Inventory Management Service',
+  //   url: process.env.INVENTORY_SERVICE_URL || 'http://localhost:6003', 
+  //   docsPath: '/api-docs/v1/swagger.json',
+  //   version: '1.0.0',
+  // },
+  // 'warehouse-service': {
+  //   name: 'Warehouse Management Service',
+  //   url: process.env.WAREHOUSE_SERVICE_URL || 'http://localhost:6004',
+  //   docsPath: '/api-docs/v1/swagger.json', 
+  //   version: '1.0.0',
+  // },
+  // 'notification-service': {
+  //   name: 'Notification Service',
+  //   url: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:6005',
+  //   docsPath: '/api-docs/v1/swagger.json',
+  //   version: '1.0.0',
+  // },
 };
 
 // Cache for swagger specs

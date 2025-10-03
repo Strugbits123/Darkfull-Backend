@@ -7,8 +7,8 @@ import {
 } from '../../error-handler';
 
 // JWT Configuration
-const ACCESS_TOKEN_SECRET: string = process.env.ACCESS_TOKEN_SECRET as string;
-const REFRESH_TOKEN_SECRET: string = process.env.REFRESH_TOKEN_SECRET as string;
+const ACCESS_TOKEN_SECRET: string = process.env.ACCESS_TOKEN_SECRET as string || "default_access_secret";
+const REFRESH_TOKEN_SECRET: string = process.env.REFRESH_TOKEN_SECRET as string || "default_refresh_secret";
 const JWT_EXPIRES_IN: string = (process.env.JWT_EXPIRES_IN as string) || '7d';
 const JWT_REFRESH_EXPIRES_IN: string =
   (process.env.JWT_REFRESH_EXPIRES_IN as string) || '30d';
@@ -37,8 +37,8 @@ export const generateAccessToken = (
 
   const options: SignOptions = {
     expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
-    issuer: 'animal-adoption-portal',
-    audience: 'animal-adoption-portal-users',
+    issuer: 'dark-full-3pl-platform',
+    audience: 'dark-full-3pl-platform-users',
   };
 
   return jwt.sign(tokenPayload, ACCESS_TOKEN_SECRET, options);
@@ -54,8 +54,8 @@ export const generateRefreshToken = (
 
   const options: SignOptions = {
     expiresIn: JWT_REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
-    issuer: 'animal-adoption-portal',
-    audience: 'animal-adoption-portal-users',
+    issuer: 'dark-full-3pl-platform',
+    audience: 'dark-full-3pl-platform-users',
   };
 
   return jwt.sign(tokenPayload, REFRESH_TOKEN_SECRET, options);

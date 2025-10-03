@@ -798,18 +798,90 @@ export const swaggerDocument = {
       }
     },
     "/auth/salla/connect": {
-      "get": {
+      "post": {
         "tags": ["Authentication - Salla Integration"],
         "summary": "Connect Salla Store",
-        "description": "Initiate Salla OAuth connection for Store Admin",
+        "description": "Store Admin initiates Salla OAuth connection by providing credentials",
         "security": [
           {
             "BearerAuth": []
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sallaClientId": {
+                    "type": "string",
+                    "description": "Salla OAuth Client ID",
+                    "example": "your_salla_client_id"
+                  },
+                  "sallaClientSecret": {
+                    "type": "string",
+                    "description": "Salla OAuth Client Secret", 
+                    "example": "your_salla_client_secret"
+                  }
+                },
+                "required": ["sallaClientId", "sallaClientSecret"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Redirect to Salla OAuth authorization page"
+            "description": "Salla connection initiated, redirect to authorization URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Salla connection initiated successfully. Please complete authorization via the provided URL."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "store": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "store_123"
+                            },
+                            "name": {
+                              "type": "string",
+                              "example": "Ahmed's Electronics Store"
+                            },
+                            "sallaClientId": {
+                              "type": "string",
+                              "example": "your_salla_client_id"
+                            }
+                          }
+                        },
+                        "authorizationUrl": {
+                          "type": "string",
+                          "description": "Salla OAuth authorization URL to redirect user to",
+                          "example": "https://accounts.salla.sa/oauth2/auth?client_id=..."
+                        },
+                        "state": {
+                          "type": "string",
+                          "description": "OAuth state parameter for security",
+                          "example": "abc123def456..."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -818,12 +890,7 @@ export const swaggerDocument = {
       "get": {
         "tags": ["Authentication - Salla Integration"],
         "summary": "Salla OAuth Callback",
-        "description": "Handle Salla OAuth callback and exchange code for tokens",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "description": "Handle Salla OAuth callback and exchange authorization code for access tokens. No authentication required as this is called by Salla.",
         "parameters": [
           {
             "name": "code",
@@ -837,8 +904,8 @@ export const swaggerDocument = {
           {
             "name": "state",
             "in": "query",
-            "required": false,
-            "description": "State parameter for security",
+            "required": true,
+            "description": "State parameter for security validation",
             "schema": {
               "type": "string"
             }
